@@ -149,7 +149,8 @@ void checkBox(Board&, int, int);
 
 void checkPos(Board&, int, int);
 
-void findSingles(Board&);
+bool setSquare(Board&, int, int);
+bool validateBoard(Board);
 
 array<array<int, 9>, 9> readFile();
 
@@ -170,9 +171,8 @@ int main(){
    preCheck(myBoard, manRow, manCol);
    checkRow(myBoard, manRow, manCol);
    checkCol(myBoard, manRow, manCol);
-   checkBox(myBoard, manRow, manCol);
-   
-   
+   checkBox(myBoard, manRow, manCol); 
+   checkPos(myBoard, manRow, manCol);
 //   Testing one square
    if(true){
       int testRow = manRow;
@@ -219,13 +219,14 @@ void checkCol(Board &board, int row, int col){
  ***********************************************************************/
 void checkBox(Board &board, int row, int col){
    
-   int br = (9 % row) * 3;
-   int bc = (9 % col) * 3;
+   int br = floor(row / 3) * 3;
+   int bc = floor(col / 3) * 3;
    cout << br << " | " << bc << endl;
    for(int ir = br; ir < (br + 3); ir++){
       for(int ic = bc; ic < (bc + 3); ic++){
          for(int in = 1; in < 10; in++){
-            if(board.get(ir, ic)[in] && ir != row && ic != col && board.get(ir, ic)[0]){
+            if(board.get(ir, ic)[in] && ir != row && ic != col
+                  && board.get(ir, ic)[0]){
                board.remove(row, col, in);
             }
          }
@@ -238,12 +239,105 @@ void checkBox(Board &board, int row, int col){
  * Checks what other squares need to be based on what is in their box
  ***********************************************************************/
 void checkPos(Board &board, int row, int col){
-   for(int in = 1; in < 10; in++){
-      
-      
-      
-      
-      
+   pair<int, int> hbox, vbox;
+   vector<int> prVals, pcVals;
+   
+   if(board.get(row, col)[0]){
+      return;
+   }
+   
+   
+   //Make a list of values marked as possible for square.
+   for(int i = 1; i < 10; i++){
+      if(board.get(row, col)[i]){
+         prVals.push_back(i);
+         pcVals.push_back(i);
+      }
+   }
+   
+   //Find top left corner of other two boxes
+   //only need to find half of the location.
+   switch((int)floor(col / 3)){
+   case 0:
+      hbox.first = 3;
+      hbox.second = 6;
+      break;
+   case 1:
+      hbox.first = 0;
+      hbox.second = 6;
+      break;
+   case 2:
+      hbox.first = 0;
+      hbox.second = 3;
+      break;
+   }
+   
+   switch((int)floor(row / 3)){
+   case 0:
+      vbox.first = 3;
+      vbox.second = 6;
+      break;
+   case 1:
+      vbox.first = 0;
+      vbox.second = 6;
+      break;
+   case 2:
+      vbox.first = 0;
+      vbox.second = 3;
+      break;
+   }
+   
+   //Do horizontal first
+   //Loop through prVals checking boxes checking one at a time.
+   while(!prVals.empty()){
+      array<bool, 3> found1, found2;
+      found1.fill(false);
+      found2.fill(false);
+      int cVal = prVals.back();
+      prVals.pop_back();
+      for(int ir = 0; ir < 3; ir++){
+         for(int ic = 0; ic < 3; ic++){
+            if(!board.get(ir + (floor(row / 3) * 3), (ic + hbox.first))[0])
+               break;
+            if(board.get(ir + (floor(row / 3) * 3), (ic + hbox.first))[cVal]){
+               found1[ir] = true;
+            }
+            if(board.get(ir + (floor(row / 3) * 3), (ic + hbox.second))[cVal]){
+               found2[ir] = true;
+            }
+         }
+      }
+      if((found1[0] ^ found1[1] ^ found1[2]) ||
+            (found2[0] ^ found2[1] ^ found2[2])){
+         board.remove(row, col, cVal);
+      }
+   }
+   
+   //Setup boxes for vertical
+   
+   //Do vertical second
+   while(!pcVals.empty()){
+      array<bool, 3> found1, found2;
+      found1.fill(false);
+      found2.fill(false);
+      int cVal = pcVals.back();
+      pcVals.pop_back();
+      for(int ir = 0; ir < 3; ir++){
+         for(int ic = 0; ic < 3; ic++){
+            if(board.get((ir + vbox.first), ic + (floor(col / 3) * 3))[0])
+               break;
+            if(board.get((ir + vbox.first), ic + (floor(col / 3) * 3))[cVal]){
+               found1[ic] = true;
+            }
+            if(board.get((ir + vbox.second), ic + (floor(col / 3) * 3))[cVal]){
+               found2[ic] = true;
+            }
+         }
+      }
+      if((found1[0] ^ found1[1] ^ found1[2]) ||
+            (found2[0] ^ found2[1] ^ found2[2])){
+         board.remove(row, col, cVal);
+      }
    }
 }
 
@@ -252,23 +346,19 @@ void checkPos(Board &board, int row, int col){
  * Update possible values in effected row, column, and box.
  * Optional: pass location and value
  ***********************************************************************/
-void setSquare(Board &board, int row = 0, int col = 0, int val = 0){
+bool setSquare(Board &board, int row, int col, int val){
+   bool noSingles = true;
    
+   return noSingles;
 }
 
 /**********************************************************************
  * Validates the whole board.
  ***********************************************************************/
-void validateBoard(Board board){
+bool validateBoard(Board board){
+   bool valid = true;
    
-}
-
-/**********************************************************************
- * Undoes changes until board is valid again.
- * Supposed to be called in conjunction with validateBoard.
- ***********************************************************************/
-void undo(Board &board){
-   
+   return valid;
 }
 
 /**********************************************************************
