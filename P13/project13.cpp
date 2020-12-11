@@ -10,7 +10,7 @@
 *   Terms:
 *   A board is a 3x3 grid of boxes.
 *   A box is a 3x3 of squares.
-*   A square can only have one value, but multiple possables.
+*   A square can only have one value, but multiple possibles.
 *
 *    Estimated:  4.0hrs
 *    Actual:     4.0hrs
@@ -24,6 +24,7 @@
 #include <fstream>
 #include <utility>
 #include <array>
+#include <cmath>
 
 using namespace std;
 
@@ -115,7 +116,7 @@ public:
          cout << "You can set a final value for a filled square\n";
          return;
       }
-      pboard[row][col] = val;
+      board[row][col] = val;
    }
    
    void goBack(int num = 1){
@@ -142,15 +143,17 @@ public:
    }
 };
 
-array<array<int, 9>, 9> readFile();
+void checkRow(Board&, int, int);
+void checkCol(Board&, int, int);
+void checkBox(Board&, int, int);
 
-void checkRow(Board&, pair<int,int>);
-void checkCol(Board&, pair<int,int>);
-void checkBoc(Board&, pair<int,int>);
-
-void checkPos(Board&, pair<int,int>);
+void checkPos(Board&, int, int);
 
 void findSingles(Board&);
+
+array<array<int, 9>, 9> readFile();
+
+void preCheck(Board&, int, int);
 
 /**********************************************************************
  * This is the entry point for the program.
@@ -158,12 +161,27 @@ void findSingles(Board&);
 int main(){
    Board myBoard(readFile());
    
-   //First find all possables for each square using
-   //basic searches.(checkRow, checkCol, checkSquare)
+//   First find all possibles for each square using
+//   basic searches.(checkRow, checkCol, checkSquare)
+   
+   int manRow = 4;
+   int manCol = 4;
+   
+   preCheck(myBoard, manRow, manCol);
+   checkRow(myBoard, manRow, manCol);
+   checkCol(myBoard, manRow, manCol);
+   checkBox(myBoard, manRow, manCol);
    
    
-   
-   
+//   Testing one square
+   if(true){
+      int testRow = manRow;
+      int testCol = manCol;
+      cout << "S: " << myBoard.get(testRow, testCol)[0] << endl;;
+      for(int i = 1; i < 10; i++){
+         cout << i << ": " << myBoard.get(testRow, testCol)[i] << endl;;
+      }
+   }
 	return 0;
 }
 
@@ -171,40 +189,70 @@ int main(){
  * Basic search:
  * Checks row
  ***********************************************************************/
-void checkRow(Board &board, pair<int,int> loc){
-   
+void checkRow(Board &board, int row, int col){
+   for(int i = 0; i < 9; i++){
+      for(int ii = 1; ii < 10; ii++){
+         if(board.get(row, i)[ii] && (i != col) && board.get(row, i)[0]){
+            board.remove(row, col, ii);
+         }
+      }
+   }
 }
 
 /**********************************************************************
  * Basic search:
- * checks col
+ * checks column
  ***********************************************************************/
-void checkCol(Board &board, pair<int,int> loc){
-   
+void checkCol(Board &board, int row, int col){
+   for(int i = 0; i < 9; i++){
+      for(int ii = 1; ii < 10; ii++){
+         if(board.get(i, col)[ii] && (i != row) && board.get(i, col)[0]){
+            board.remove(row, col, ii);
+         }
+      }
+   }
 }
 
 /**********************************************************************
  * Basic search:
  * checks box
  ***********************************************************************/
-void checkBox(Board &board, pair<int,int> loc){
+void checkBox(Board &board, int row, int col){
    
+   int br = (9 % row) * 3;
+   int bc = (9 % col) * 3;
+   cout << br << " | " << bc << endl;
+   for(int ir = br; ir < (br + 3); ir++){
+      for(int ic = bc; ic < (bc + 3); ic++){
+         for(int in = 1; in < 10; in++){
+            if(board.get(ir, ic)[in] && ir != row && ic != col && board.get(ir, ic)[0]){
+               board.remove(row, col, in);
+            }
+         }
+      }
+   }
 }
 
 /**********************************************************************
  * Advanced search:
  * Checks what other squares need to be based on what is in their box
  ***********************************************************************/
-void checkPos(Board &board, pair<int,int> loc){
-   
+void checkPos(Board &board, int row, int col){
+   for(int in = 1; in < 10; in++){
+      
+      
+      
+      
+      
+   }
 }
 
 /**********************************************************************
- * Find squares with only one possability and set it.
- * Update possable vals in effected row, col, and box.
+ * Find squares with only one possibility and set it.
+ * Update possible values in effected row, column, and box.
  * Optional: pass location and value
  ***********************************************************************/
-void setSquare(Board &board, pair<int,int> loc = {0,0}, int val = 0){
+void setSquare(Board &board, int row = 0, int col = 0, int val = 0){
    
 }
 
@@ -217,7 +265,7 @@ void validateBoard(Board board){
 
 /**********************************************************************
  * Undoes changes until board is valid again.
- * Supposed to be called in conjuction with validateBoard.
+ * Supposed to be called in conjunction with validateBoard.
  ***********************************************************************/
 void undo(Board &board){
    
@@ -246,8 +294,15 @@ array<array<int, 9>, 9> readFile(){
    return board;
 }
 
-
-
+/**********************************************************************
+ * Sets up square for checks
+ * Checks row
+ ***********************************************************************/
+void preCheck(Board &board, int row, int col){
+   for(int i = 1; i < 10; i++){
+      board.add(row, col, i);
+   }
+}
 
 
 
